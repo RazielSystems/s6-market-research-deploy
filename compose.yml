@@ -1,0 +1,41 @@
+name: s6-market-research
+services:
+  database:
+    image: mongodb/mongodb-community-server
+    container_name: s6-market-research-database
+    hostname: database.market-research.pdn
+    restart: always
+    ports:
+      - ${DB_PORT}:27017
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: ${DB_ROOT_USER}
+      MONGODB_INITDB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - ./database/mongodb/config/mongod.conf:/etc/mongod.conf
+      - ./database/mongodb/data/log/:/var/log/mongodb
+      - ./database/mongodb/data/volume:/var/lib/mongodb
+    command: ["-f", "/etc/mongod.conf"]
+  back:
+    build:
+      context: ./back
+      dockerfile: Dockerfile
+    container_name: s6-market-research-back
+    hostname: backend.market-research.pdn
+    restart: always
+    ports:      
+      - ${API_PORT}:${API_PORT}
+    environment:
+      MONGODB_URI: ${MONGODB_URI}
+      MONGODB_DB: ${MONGODB_DB}
+      MONGODB_COL: ${MONGODB_COL}
+      API_PORT: ${API_PORT}
+      API_PREFIX: ${API_PREFIX}
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: s6-market-research-front
+    hostname: frontend.market-research.pdn
+    restart: always
+    ports:
+      - ${FRONT_PORT}:80
